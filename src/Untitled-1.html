@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+<body>
+
+<p> HELLO  BOYS !<br></p>
+<h2>The XMLHttpRequest Object</h2>
+
+<p id="demo">Let AJAX change CONTENTS</p>
+
+<div id="mydiv1">
+    <h2>This div1 WILL BE updated</h2>
+</div>
+
+<button type="button" onclick="loadDoc1()">Change Content 1</button>
+
+<div id="mydiv2">
+    <h2>This div2 WILL BE updated</h2>
+</div>
+
+<button type="button" onclick="loadDoc2()">Change Content 2</button>
+
+<script>
+function loadDoc1() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("mydiv1").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("GET", "c123", true);
+  xhttp.send();
+}
+function loadDoc2() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("mydiv2").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("GET", "c124", true);
+  xhttp.send();
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+/*
+  Morse.cpp - Library for flashing Morse code.
+  Created by Arturo Tramontini, 20/agosto/2019
+  Released into the public domain.
+*/
+
+#include "Arduino.h"
+#include "CLExec.h"
+
+
+//// necessary if these are statics, else is an error
+//char CLExec::sA[] = "";
+//byte CLExec::RFD = 0;
+//byte CLExec::ACK = 0;
+
+CLExec::CLExec() {
+  //  strcpy(sA , "");
+  // strcpy(_Tname, "<TA>");
+  //  RFD = 0;
+  //  ACK = 0;
+}
+
+
+
+void CLExec::debug(int i) {
+  switch (i) {
+    case 1000:
+      Serial.println("--------");
+      Serial.print("ReadyToProcess:");
+      Serial.print(ReadyToProcess);
+      Serial.print(" rp:");
+      Serial.print(_rp);
+      Serial.print(" wp:");
+      Serial.println(_wp);
+      //      char s[200];
+      //      for(int i=0; i < 20; i++){
+      //        sprintf(s,"%02X ",_Buffer[i]);
+      //        Serial.print(s);
+      //      }
+      //      Serial.println();
+      Serial.println("--------");
+      break;
+
+
+    case 2000:
+      Serial.println("===exec===");
+      Serial.print(_Tname);
+      Serial.print(" (");
+      Serial.print(sCMD);
+      Serial.println(")");
+      for (int i = MAX_P - 1; i >= 0 ; i--) {
+        Serial.print(P[i]);
+        if (i > 0) Serial.print(", ");
+      }
+      Serial.println();
+      Serial.println("--------");
+      break;
+
+    case 3:
+      for (int i = MAX_P - 1; i >= 0 ; i--) {
+        Serial.print(P[i]);
+        if (i > 0) Serial.print(", ");
+      }
+      Serial.println();
+      break;
+  }
+}
+
+
+//-- local execute for testing only
+// execute is better working in out-of-class because it will need a lot of externals
+void CLExec::executeP() {
+  Serial.println("====P=====");
+  for (int i = MAX_P - 1; i >= 0 ; i--) {
+    Serial.print(P[i]);
+    if (i > 0) Serial.print(", ");
+  }
+  Serial.println();
+  Serial.print(_Tname);
+  Serial.print("(");
+  Serial.print(sCMD);
+  Serial.print("):");
+  switch (P[0]) {
+    case 1:
+      Serial.println("Hello World !");
+      break;
+  }
+  ReadyToProcess = 0;
+  Serial.println("ReadyToProcess = 0");
+}
+
+
+void CLExec::tokenize(char * str1) {
+  // example from www.tutorialspoint.com
+  // char str[80] = " ,  32,34.56, 667,180000 , .  ";
+  char str[81] = "";
+  str1[80] = 0; //precauzione
+  strcpy(str, str1);
+  //  Serial.println();
+  //  Serial.println(str);
+  const char s[8] = ",";
+  char *token = NULL;
+  char s1[257];
+  String S2;
+  //Serial.println("===start==");
+  //for (int i = 0; i < MAX_P; i++) P[i] = 0; // clear P buffer
+  if (str[0] == 0) {
+    str[0] = 32;
+    str[1] = 0;
+  }
+  /* get the first token */
+  token = strtok(str, s);
+  /* walk through other tokens */
+  while ( token != NULL ) {
+    S2 = token;
+    S2.trim();  // use String  facility of trimming blanks
+    strcpy(s1, S2.c_str()); // and nor restore to char[]
+    if (strcmp(s1, ".") != 0) { // enter to P[] if not execution char '.'
+      //Serial.println(s1);
+      long N;
+      N = strtoul(token, NULL, 0); //atol(token);
+      //Serial.println(N);
+      for (int i = MAX_P - 1; i >= 1; i--) { //shift up P buffer
+        P[i] = P[i - 1];
+      }
+      P[0] = N;
+    }
+    token = strtok(NULL, s);
+
+    //    if (strcmp(s1, ".") == 0) {
+    //      executeP();
+    //      for (int i = 0; i < MAX_P; i++) P[i] = 0;  // clear P commands
+    //    }
+  }
+  //Serial.println("===stop===");
+}
+
+
+void CLExec::extractString() {
+
+  // wait if must process previous, else return (incoming char are anyway saved in buffer if it is not full)
+  if (ReadyToProcess != 0) return;
+
+  char s[4];
+
+  // get from circular buffer if not empty, else return because nothing to do
+  // if (_rp == _wp) return; // buffer is empty, discard incoming byte
+  // byte nextRp;
+  // nextRp = _rp + 1;
+  // if (nextRp >= sizeof(_Buffer))  nextRp = 0;
+  // _rp = nextRp;
+  // s[0] = _Buffer[_rp];
+  // s[1] = 0;
+  s[0] = getCircBuf();
+  s[1] = 0;
+
+  if ((strlen(sA) + strlen(s)) < 250) strcat(sA, s);
+
+  if (s[0] == '.') {
+
+    // Serial.println();
+    strcpy(sCMD, sA);
+
+    tokenize(sA);
+    strcpy(sA, "");
+
+    ReadyToProcess = 1; // it will be cleared when P command will has finished to execute.
+    // tradotto da google: verrà cancellato quando l'esecuzione del comando P sarà terminata :)
+
+    debug(1);
+  }
+}
+
+
+// void CLExec::buildString(char c) {
+  // put in circular buffer if not full, else discard incoming char
+  // byte nextWp;
+  // nextWp = _wp + 1;
+  // if (nextWp >= sizeof(_Buffer))  nextWp = 0;
+  // _wp = nextWp;
+  // if (_wp == _rp) return; // buffer is full, discard incoming byte
+  // _Buffer[_wp] = c;
+// }
+
+
+
+void CLExec::putCircBuf(char c) {
+  // put in circular buffer if not full, else discard incoming char
+  byte nextWp;
+  nextWp = _wp + 1;
+  if (nextWp >= sizeof(_Buffer))  nextWp = 0;
+  _wp = nextWp;
+  if (_wp == _rp) return; // buffer is full, discard incoming byte
+  _Buffer[_wp] = c;
+}
+
+
+char CLExec::getCircBuf() {
+   //if (ReadyToProcess != 0) return (char)0;
+  // get from circular buffer if not empty, else return because nothing to do
+  if (_rp == _wp) return (char)0; // buffer is empty, discard incoming byte
+  byte nextRp;
+  nextRp = _rp + 1;
+  if (nextRp >= sizeof(_Buffer))  nextRp = 0;
+  _rp = nextRp;
+  char c = _Buffer[_rp];
+  return c;
+}
+
+void CLExec::checkSerial() {
+  
+  while (Serial.available()) {
+    char c = Serial.read();
+    if ((c == 0x0d) || (c == 0x0a)) break;
+    putCircBuf(c);
+    //buildToken(c);
+  }
+  
+  while (Serial1.available()) {
+    char c = Serial1.read();
+    if ((c == 0x0d) || (c == 0x0a)) break;
+    putCircBuf(c);
+    //buildToken(c);
+  }
+  
+}

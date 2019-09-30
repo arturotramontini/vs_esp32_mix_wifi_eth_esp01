@@ -1,0 +1,121 @@
+xxx123xxx  zzzz
+
+//===============================================
+
+// void checkActions() { do_seqAT1(); }
+
+//===============================================
+
+// void myTokenizer(char *is) {
+
+//   static byte flag = 0;
+//   if (!flag) {
+//     flag = 1;
+//     Serial.print("stackPNT taskRx1 mytokenizer:");
+//     Serial.println((uint32_t)get_sp(), 16);
+//   }
+
+//   char TokenDelimiter1[32];
+//   strcpy(TokenDelimiter1, " ,:/\"\\=.");
+
+//   char token[200];
+//   memset(token, 0, sizeof(token));
+
+//   char s[200];
+//   memset(s, 0, sizeof(s));
+
+//   char *tokPnt;
+//   tokPnt = token;
+
+//   int len;
+//   len = strlen(is);
+//   if (len >= 190) {
+//     is[190] = 0;
+//     len = 189;
+//   }
+
+//   Serial.print("\r\n---- tokens ----\r\n");
+
+//   int idx = 0;
+//   for (int i = 0; i < len; i++) {
+//     char c = is[i];
+//     if (strchr(TokenDelimiter1, c)) { // check if is a token delimiter char
+//       if (strlen(token) > 0) {        // acquire token only if not NULL
+//         sprintf(s, "%2d: %s\r\n", idx, token);
+//         Serial.print(s);
+//         tokPnt = token;
+//         ATTok[idx] = token;
+//         if (idx < 30)
+//           idx++;
+//         memset(token, 0, sizeof(token));
+//       }
+//     } else { // collect token
+//       *tokPnt++ = c;
+//       *tokPnt = 0;
+//     }
+//   }
+
+//   if (strlen(token) != 0) {
+//     sprintf(s, "%2d: %s\r\n", idx, token);
+//     Serial.print(s);
+//     ATTok[idx++] = token;
+//   }
+
+//   while (idx < 32) {
+//     ATTok[idx] = "";
+//     idx++;
+//   }
+
+//   Serial.println("----------------");
+//   Serial.println();
+// }
+
+//===============================================
+
+// int checkEsp01Answare() {
+
+//   static byte flag = 0;
+//   if (!flag) {
+//     flag = 1;
+//     Serial.print("stackPNT taskRx1 checkEsp01Answare:");
+//     Serial.println((uint32_t)get_sp(), 16);
+//   }
+
+//   // if (Esp01Rx.length() == 0)
+//   //   return 0;
+
+//   Serial.print("[");
+//   Serial.print(Esp01Rx);
+//   Serial.println("]");
+//   char s[256];
+//   strcpy(s, Esp01Rx.c_str());
+//   myTokenizer(s);
+//   Esp01Rx = "";
+//   return 1;
+// }
+
+//===============================================
+
+// void collectEsp01Answare(char c) {
+//   static int count = 0;
+//   if (((c >= 0x20) && (c <= 0x7f)) &&
+//       (count < 190)) { // collect max 189 char, only from 0x20..0x7f
+//     Esp01Rx += c;
+//     count++;
+//   }
+//   if (c == 13) {
+//     checkEsp01Answare();
+//     count = 0;
+//   }
+// }
+
+//===============================================
+
+
+        // // Check to see if the client request was "GET /H" or "GET /L":
+        // if (currentLine.endsWith("GET /H")) {
+        //   digitalWrite(21, HIGH); // GET /H turns the LED on
+        // }
+        // if (currentLine.endsWith("GET /L")) {
+        //   digitalWrite(21, LOW); // GET /L turns the LED off
+        // }
